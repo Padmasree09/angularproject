@@ -1,0 +1,108 @@
+.table-wrapper {
+  position: relative;
+  max-height: 400px; /* Set your desired max height */
+  overflow: auto; /* Allow both horizontal and vertical scrolling */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.table-scrollable {
+  max-height: 100%; /* Set height to fill the container */
+  overflow-x: auto; /* Allow horizontal scrolling */
+  overflow-y: auto; /* Allow vertical scrolling */
+  display: block; /* Enable block layout for scrolling */
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.table {
+  width: 100%; /* Ensure the table takes full width */
+  border-collapse: collapse; /* Collapse borders */
+}
+
+.table th {
+  font-weight: bold;
+  background-color: #007bff; /* Bold blue for header background */
+  color: white; /* White text for contrast */
+  padding: 12px 18px;
+  border-bottom: 2px solid #dee2e6;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 2; /* Ensure it stays above the table content */
+  text-transform: uppercase; /* Capitalize headers for a modern look */
+  letter-spacing: 0.05em; /* Slight spacing between letters */
+}
+
+.table td {
+  padding: 12px 18px;
+  white-space: nowrap;
+  border-bottom: 1px solid #e9ecef; /* Subtle border for cell separation */
+  color: #495057; /* Soft dark color for readability */
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f3f5; /* Light grey on row hover */
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa; /* Subtle alternating background for rows */
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+  background-color: #ffffff;
+}
+
+.table td, .table th {
+  transition: all 0.2s ease; /* Smooth transition for hover effects */
+}
+
+.table th:hover {
+  background-color: #0056b3; /* Slightly darker blue when hovering over header */
+}
+
+.table td:hover {
+  background-color: #e2e6ea; /* Light grey on cell hover */
+}
+
+.row {
+  margin-bottom: 20px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+}
+
+.chart-container {
+  padding: 15px;
+  border: 2px solid slategray;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive design for better display on mobile and tablet */
+@media (max-width: 768px) {
+  .row {
+    margin-bottom: 10px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+}

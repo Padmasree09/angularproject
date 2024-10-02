@@ -1,5 +1,5 @@
+import { DatePipe } from "@angular/common";
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
-
 declare const $: any;
 declare interface RouteInfo {
   path: string;
@@ -26,6 +26,7 @@ export const ROUTES: RouteInfo[] = [
 @Component({
   selector: "app-sidebar",
   templateUrl: "./sidebar.component.html",
+  providers: [DatePipe],
 })
 export class SidebarComponent implements OnInit {
   fromDate: string;
@@ -35,7 +36,7 @@ export class SidebarComponent implements OnInit {
 
   onDateChange() {
     this.dateRangeChange.emit({ from: this.fromDate, to: this.toDate });
-    console.log('Date Range Changed:', this.fromDate, this.toDate);
+    console.log("Date Range Changed:", this.fromDate, this.toDate);
   }
   menuItems = [
     {

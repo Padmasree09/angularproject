@@ -106,3 +106,80 @@ canvas {
     padding: 15px;
   }
 }
+
+.chart-container {
+  background-color: #2c2c2c; /* Dark background for contrast */
+  border-radius: 8px; /* Rounded corners */
+  padding: 20px; /* Add some padding */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Soft shadow */
+  margin: 20px; /* Space around the chart */
+}
+canvas {
+  width: 100% !important; /* Make canvas take full width */
+  height: auto !important; /* Maintain aspect ratio */
+}
+:root {
+  --primary-color: rgba(54, 162, 235, 0.5);
+  --primary-border-color: rgba(54, 162, 235, 1);
+  --secondary-color: rgba(255, 99, 132, 0.5);
+  --secondary-border-color: rgba(255, 99, 132, 1);
+  /* Add more colors as needed */
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Add some space between rows */
+}
+
+.form-row {
+  display: flex; /* Enables Flexbox */
+  justify-content: space-between; /* Distributes elements with space in-between */
+  flex-wrap: wrap; /* Wraps elements if screen size is too small */
+  gap: 20px; /* Adds space between elements */
+  padding: 10px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column; /* Labels and inputs are stacked vertically */
+  flex: 1; /* Allow each form field to take equal space */
+}
+
+.form-field label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-field input {
+  padding: 8px;
+  border: 1px solid #f88a0c;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 50%; /* Ensure the inputs take full width */
+}
+.form-field button {
+  background-color: #4CAF50; /* Green background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 8px 16px; /* Smaller padding */
+  text-align: center; /* Center the text */
+  text-decoration: none; /* Remove underline */
+  display: inline-block; /* Make it inline */
+  font-size: 14px; /* Smaller font size */
+  margin: 6px 2px; /* Reduced margin */
+  cursor: pointer; /* Pointer/hand icon on hover */
+  border-radius: 8px; /* Rounded corners */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition */
+}
+
+.form-field button:hover {
+  background-color: #45a049; /* Darker green on hover */
+  transform: scale(1.05); /* Slightly enlarge button on hover */
+}
+
+.form-field button:active {
+  background-color: #3e8e41; /* Even darker green when clicked */
+  transform: scale(0.98); /* Slightly shrink button on click */
+}
+
+

@@ -38,10 +38,21 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
   saleTypeChart: Chart;
   channelChart: Chart;
   salesComparisionChart: Chart;
+  cancellationsComparisionChart: Chart;
+  performanceComparisionChart: Chart;
+  bookingSourceComparisonChart: Chart;
+  materialGroupComparisonChart: Chart;
+  areaComparisionChart: Chart;
+
   activeCanvas: string = "salesChart"; // Initial canvas to display
   activeChartInstance: Chart | null = null;
-  isReportVisible = true;
+  isReportVisible = false;
   isFilterVisible = false;
+  isSidebarOpen = false; // Sidebar starts open by default
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen; // Toggle the sidebar state
+  }
 
   toggleReport() {
     this.isReportVisible = !this.isReportVisible; // Toggle the visibility
@@ -52,12 +63,20 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(SidebarComponent) sidebar: SidebarComponent;
   @ViewChild("graphSection") graphSection: ElementRef;
   onDateRangeChange(dateRange: { from: string; to: string }) {
+    console.log("onDateRangeChange method called");
+    console.log("Received Date Range:", dateRange);
     this.fromDate = dateRange.from;
     this.toDate = dateRange.to;
+    console.log("From Date:", this.fromDate, "To Date:", this.toDate);
     this.filterSalesData();
-    this.createSalesChart(); // Your existing method for detailed sales chart
-    this.createMonthlySalesComparisonChart(this.fromDate, this.toDate); // New comparison chart
-    console.log("Date range changed. Creating comparison chart.");
+    if (this.fromDate && this.toDate) {
+      console.log("Creating charts for date range");
+      this.createSalesChart();
+      this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
+      console.log("Date range changed. Creating comparison chart.");
+    } else {
+      console.log("Date range is incomplete");
+    }
   }
   constructor(
     private salesDataService: SalesDataService,
@@ -77,10 +96,16 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.destroyChart(this.bookingSourceChart);
     this.destroyChart(this.performanceChart);
     this.destroyChart(this.areaChart);
+    this.destroyChart(this.saleTypeChart);
     this.destroyChart(this.materialGroupChart);
     this.destroyChart(this.materialGroup3Chart);
     this.destroyChart(this.channelChart);
     this.destroyChart(this.salesComparisionChart);
+    this.destroyChart(this.cancellationsComparisionChart);
+    this.destroyChart(this.performanceComparisionChart);
+    this.destroyChart(this.bookingSourceComparisonChart);
+    this.destroyChart(this.materialGroupComparisonChart);
+    this.destroyChart(this.areaComparisionChart);
   }
   destroyChart(chart: Chart | undefined): void {
     if (chart) {
@@ -105,6 +130,11 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.renderChart(this.currentChart);
   }
   ngAfterViewInit(): void {
+    if (this.sidebar) {
+      console.log("Sidebar component loaded:", this.sidebar);
+    } else {
+      console.error("Sidebar component not found.");
+    }
     this.renderChart("sales");
   }
 
@@ -125,19 +155,22 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
       this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
     } else if (period === "cancellations") {
       this.createCancellationsChart();
-      this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
+      this.createCancellationsComparisionChart(this.fromDate, this.toDate);
       this.scrollToGraph();
+    } else if (period === "saleType") {
+      this.scrollToGraph();
+      this.createSaleTypeChart();
     } else if (period === "bookingsource") {
       this.createBookingSourceChart();
-      this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
+      this.createBookingSourceComparisonChart();
       this.scrollToGraph();
     } else if (period === "materialgroup") {
       this.createMaterialGroupChart();
-      this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
+      this.createMaterialGroupComparisonChart();
       this.scrollToGraph();
     } else if (period === "area") {
       this.createAreaChart();
-      this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
+      this.createAreaComparisionChart(this.fromDate, this.toDate);
       this.scrollToGraph();
     } else if (period === "materialgroup3") {
       this.createMaterialGroup3Chart();
@@ -145,7 +178,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
       this.scrollToGraph();
     } else if (period === "performance") {
       this.createPerformanceChart();
-      this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
+      this.createPerformanceComparisionChart(this.fromDate, this.toDate);
       this.scrollToGraph();
     } else if (period === "channel") {
       this.createChannelChart();
@@ -162,7 +195,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
       (data) => {
         console.log("Received data:", data); // Log the received data
         this.salesData = data; // Assign the data to salesData
-        
+
         this.filteredSalesData = data; // Initially show all data
         this.createSalesChart();
         this.createCancellationsChart(); // Create chart for cancellations
@@ -194,21 +227,48 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     //this.updateCharts(this.filteredSalesData); // Update charts with filtered data
     console.log(this.filteredSalesData);
   }
+  // filterSalesData() {
+  //   if (this.fromDate && this.toDate) {
+  //     this.filteredSalesData = this.salesData.filter((sale) => {
+  //       const saleDate = new Date(sale.AUDAT); // Convert sale date to Date object
+  //       return (
+  //         saleDate >= new Date(this.fromDate) &&
+  //         saleDate <= new Date(this.toDate)
+  //       );
+  //     });
+  //     console.log("Filtered Sales Data:", this.filteredSalesData);
+  //   } else {
+  //     this.filteredSalesData = this.salesData; // If no date range selected, show all data
+  //   }
+
+  //   this.updateCharts(this.filteredSalesData);
+  // }
   filterSalesData() {
     if (this.fromDate && this.toDate) {
+      // Normalize input dates
+      const fromParsedDate = this.parseDate(this.fromDate); // parseDate method should accept 'dd-mm-yyyy'
+      const toParsedDate = this.parseDate(this.toDate);
+
       this.filteredSalesData = this.salesData.filter((sale) => {
-        const saleDate = new Date(sale.AUDAT); // Convert sale date to Date object
-        return (
-          saleDate >= new Date(this.fromDate) &&
-          saleDate <= new Date(this.toDate)
-        );
+        const saleDate = this.parseDate(sale.AUDAT); // Convert sale date from dd.mm.yyyy to Date object
+        return saleDate >= fromParsedDate && saleDate <= toParsedDate;
       });
+
       console.log("Filtered Sales Data:", this.filteredSalesData);
     } else {
       this.filteredSalesData = this.salesData; // If no date range selected, show all data
     }
 
     this.updateCharts(this.filteredSalesData);
+  }
+
+  // Update parseDate method to handle both formats
+  private parseDate(dateString: string): Date {
+    const parts = dateString.split(/[-.]/);
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JavaScript
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day); // Create a new Date object
   }
 
   // Method to create a sales chart
@@ -241,7 +301,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
           y: {
             beginAtZero: true,
             grid: {
-              color: "rgba(200, 200, 200, 0.3)", // Subtle grid lines for cleaner look
+              color: "rgba(200, 200, 200, 0.2)", // Subtle grid lines for cleaner look
             },
             ticks: {
               color: "#333", // Darker tick labels for better readability
@@ -253,7 +313,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
           },
           x: {
             grid: {
-              color: "rgba(200, 200, 200, 0.3)", // Subtle grid lines on the x-axis as well
+              color: "rgba(200, 200, 200, 0.2)", // Subtle grid lines on the x-axis as well
             },
             ticks: {
               color: "#333", // Darker tick labels for better readability
@@ -305,18 +365,37 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   createMonthlySalesComparisonChart(fromDate: string, toDate: string): void {
     // Parse the input dates
-    const startDate = new Date(fromDate);
-    const endDate = new Date(toDate);
+    const startDate = this.parseDate(this.fromDate);
+    const endDate = this.parseDate(this.toDate);
 
     // Filter sales data for the given date range
     const salesInRange = this.filteredSalesData.filter((sale) => {
-      const saleDate = new Date(sale.AUDAT);
+      const saleDate = this.parseDate(sale.AUDAT);
       return saleDate >= startDate && saleDate <= endDate;
     });
+    // Debugging: Log filtered sales
+    console.log("Filtered Sales in Range:", salesInRange);
+    // Generate an array of all months between fromDate and toDate
+    const allMonths = [];
+    let currentDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      1
+    );
+    while (currentDate <= endDate) {
+      const monthYear = `${currentDate.getFullYear()}-${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}`;
+      allMonths.push(monthYear);
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+    console.log("All Months in Range:", allMonths);
 
     // Group sales by month
     const monthlySales = salesInRange.reduce((acc, sale) => {
-      const saleDate = new Date(sale.AUDAT);
+      const saleDate = this.parseDate(sale.AUDAT);
       const monthYear = `${saleDate.getFullYear()}-${(saleDate.getMonth() + 1)
         .toString()
         .padStart(2, "0")}`;
@@ -324,9 +403,15 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
       if (!acc[monthYear]) {
         acc[monthYear] = 0;
       }
-      acc[monthYear] += sale.MAIN;
+      acc[monthYear] += Number(sale.MAIN);
       return acc;
     }, {});
+    // Ensure all months in the range are included, even with 0 sales
+    allMonths.forEach((month) => {
+      if (!monthlySales[month]) {
+        monthlySales[month] = 0;
+      }
+    });
 
     // Prepare data for the chart
     const labels = Object.keys(monthlySales).sort();
@@ -521,7 +606,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     // Group by date for cancellations
     const cancellationCounts = this.filteredSalesData.reduce((acc, sale) => {
       if (sale.CANC_CHRG) {
-        const saleDate = new Date(sale.AUDAT).toDateString(); // Group by date
+        const saleDate = this.parseDate(sale.AUDAT).toDateString(); // Group by date
         acc[saleDate] = (acc[saleDate] || 0) + 1; // Count cancellations per date
         console.log(
           "Cancellations Data: ",
@@ -578,12 +663,131 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
       this.cancellationsChart.destroy();
     }
   }
+  createCancellationsComparisionChart(fromDate: string, toDate: string): void {
+    // Parse the input dates
+    const startDate = this.parseDate(fromDate);
+    const endDate = this.parseDate(toDate);
+
+    // Generate an array of all months between fromDate and toDate
+    const allMonths = [];
+    let currentDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      1
+    );
+    while (currentDate <= endDate) {
+      const monthYear = `${currentDate.getFullYear()}-${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}`;
+      allMonths.push(monthYear);
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+
+    // Group cancellations by month
+    const cancellationCounts = this.filteredSalesData.reduce((acc, sale) => {
+      if (sale.CANC_CHRG) {
+        const saleDate = this.parseDate(sale.AUDAT);
+        const monthYear = `${saleDate.getFullYear()}-${(saleDate.getMonth() + 1)
+          .toString()
+          .padStart(2, "0")}`;
+
+        if (!acc[monthYear]) {
+          acc[monthYear] = 0;
+        }
+        acc[monthYear] += 1; // Count cancellations per month
+      }
+      return acc;
+    }, {});
+
+    // Ensure all months in the range are included, even with 0 cancellations
+    allMonths.forEach((month) => {
+      if (!cancellationCounts[month]) {
+        cancellationCounts[month] = 0; // Initialize to 0 if no cancellations were found
+      }
+    });
+
+    // Prepare data for the chart
+    const labels = Object.keys(cancellationCounts).sort();
+    const data = labels.map((month) => cancellationCounts[month]);
+
+    const chartData = {
+      labels: labels.map((month) => {
+        const [year, monthNum] = month.split("-");
+        return new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleString(
+          "default",
+          { month: "long", year: "numeric" }
+        );
+      }),
+      datasets: [
+        {
+          label: "Cancellations",
+          data: data,
+          backgroundColor: "rgba(255, 99, 132, 0.6)",
+          borderColor: "rgba(255, 99, 132, 1)",
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    const config: ChartConfiguration = {
+      type: "bar" as ChartType, // Can be 'bar', 'line', 'pie', etc.
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Number of Cancellations",
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: "Month",
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const value = context.raw as number;
+                return `Cancellations: ${value}`;
+              },
+            },
+          },
+        },
+      },
+    };
+
+    // Destroy the existing chart if already rendered
+    if (this.cancellationsComparisionChart) {
+      this.cancellationsComparisionChart.destroy();
+    }
+
+    // Get the canvas element and initialize the chart
+    const ctx = (
+      document.getElementById(
+        "cancellationsComparisionChart"
+      ) as HTMLCanvasElement
+    ).getContext("2d");
+    this.cancellationsChart = new Chart(ctx, config);
+  }
+
   //method to create performance chart
   createPerformanceChart(): void {
     // Aggregate performance data by sales executive
     const performanceData = this.filteredSalesData.reduce((acc, sale) => {
-      const execName = sale.SALE_EXE; // Assuming 'SALE_EXE' is the sales executive name
-      acc[execName] = (acc[execName] || 0) + sale.MAIN; // Sum up the sales amount per executive
+      const execName = sale.SALE_EXE;
+      acc[execName] = (acc[execName] || 0) + Number(sale.MAIN);
       return acc;
     }, {});
 
@@ -683,6 +887,163 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
       console.error("Performance chart element not found");
     }
   }
+  createPerformanceComparisionChart(fromDate: string, toDate: string): void {
+    // Parse the input dates
+    const startDate = this.parseDate(fromDate);
+    const endDate = this.parseDate(toDate);
+
+    // Generate an array of all months between fromDate and toDate
+    const allMonths = [];
+    let currentDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      1
+    );
+    while (currentDate <= endDate) {
+      const monthYear = `${currentDate.getFullYear()}-${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}`;
+      allMonths.push(monthYear);
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+
+    // Aggregate performance data by sales executive and month
+    const performanceData = this.filteredSalesData.reduce((acc, sale) => {
+      const execName = sale.SALE_EXE;
+      const saleDate = this.parseDate(sale.AUDAT);
+      const monthYear = `${saleDate.getFullYear()}-${(saleDate.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`;
+
+      if (!acc[monthYear]) {
+        acc[monthYear] = {};
+      }
+
+      acc[monthYear][execName] =
+        (acc[monthYear][execName] || 0) + Number(sale.MAIN);
+      return acc;
+    }, {});
+
+    // Prepare labels and datasets for the chart
+    const execNames = [
+      ...new Set(this.filteredSalesData.map((sale) => sale.SALE_EXE)),
+    ]; // Unique sales executives
+    const chartData = {
+      labels: allMonths.map((month) => {
+        const [year, monthNum] = month.split("-");
+        return new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleString(
+          "default",
+          { month: "long", year: "numeric" }
+        );
+      }),
+      datasets: execNames.map((execName) => {
+        const data = allMonths.map(
+          (month) => performanceData[month]?.[execName] || 0
+        ); // Get data for each month or 0
+        return {
+          label: execName,
+          data: data,
+          backgroundColor: this.getRandomColor(), // Function to get random colors for each dataset
+          borderColor: "rgba(153, 102, 255, 1)", // Consistent border color for clarity
+          borderWidth: 2,
+          hoverBackgroundColor: "rgba(153, 102, 255, 0.8)",
+          hoverBorderColor: "rgba(153, 102, 255, 1)",
+        };
+      }),
+    };
+
+    const config: ChartConfiguration = {
+      type: "bar" as ChartType,
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(255, 255, 255, 0.1)",
+            },
+            ticks: {
+              color: "#333",
+              font: {
+                family: "Arial",
+                size: 12,
+              },
+            },
+          },
+          x: {
+            grid: {
+              color: "rgba(255, 255, 255, 0.1)",
+            },
+            ticks: {
+              color: "#333",
+              font: {
+                family: "Arial",
+                size: 12,
+              },
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            position: "top",
+            labels: {
+              color: "#333",
+              font: {
+                family: "Arial",
+                size: 14,
+              },
+            },
+          },
+          tooltip: {
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            borderWidth: 1,
+            borderColor: "rgba(255, 255, 255, 0.5)",
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                return `Sales: $${value}`;
+              },
+            },
+          },
+        },
+      },
+    };
+
+    // Destroy the existing chart if already rendered
+    if (this.performanceComparisionChart) {
+      this.performanceComparisionChart.destroy();
+    }
+
+    const ctx = document.getElementById(
+      "performanceComparisionChart"
+    ) as HTMLCanvasElement;
+    if (ctx) {
+      const chartCtx = ctx.getContext("2d");
+      if (chartCtx) {
+        this.performanceChart = new Chart(chartCtx, config);
+      } else {
+        console.error("Failed to get 2D context for performance chart");
+      }
+    } else {
+      console.error("Performance chart element not found");
+    }
+  }
+
+  // Utility function to get random colors for the datasets
+  getRandomColor(): string {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
 
   createBookingSourceChart(): void {
     // Group sales data by booking source
@@ -746,11 +1107,84 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     ).getContext("2d");
     this.bookingSourceChart = new Chart(ctx, config);
   }
+  createBookingSourceComparisonChart(): void {
+    // Group sales data by booking source and another variable (e.g., region or another category)
+    const bookingSourceComparison = this.filteredSalesData.reduce(
+      (acc, sale) => {
+        const source = sale.KVGR2 || "Unknown"; // Booking source
+        const category = Number(sale.MAIN) || "Other"; // Example of a category for comparison
+
+        if (!acc[source]) {
+          acc[source] = {};
+        }
+
+        acc[source][category] = (acc[source][category] || 0) + 1; // Count occurrences
+        return acc;
+      },
+      {}
+    );
+
+    const labels = Object.keys(bookingSourceComparison); // Booking sources
+    const categories = Array.from(
+      new Set(
+        Object.values(bookingSourceComparison).flatMap((source) =>
+          Object.keys(source)
+        )
+      )
+    ); // Unique categories for comparison
+
+    const dataset = categories.map((category) => ({
+      label: category,
+      data: labels.map(
+        (source) => bookingSourceComparison[source][category] || 0
+      ), // Data for each source/category
+      backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+        Math.random() * 255
+      )}, ${Math.floor(Math.random() * 255)}, 0.6)`, // Random colors for each category
+      borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+        Math.random() * 255
+      )}, ${Math.floor(Math.random() * 255)}, 1)`,
+      borderWidth: 1,
+    }));
+
+    const config: ChartConfiguration = {
+      type: "bar" as ChartType, // Bar chart type
+      data: {
+        labels,
+        datasets: dataset,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: {
+            position: "top",
+          },
+        },
+      },
+    };
+
+    // Destroy the existing chart if already rendered
+    if (this.bookingSourceComparisonChart) {
+      this.bookingSourceComparisonChart.destroy();
+    }
+
+    const ctx = document.getElementById(
+      "bookingSourceComparisonChart"
+    ) as HTMLCanvasElement;
+    this.bookingSourceComparisonChart = new Chart(ctx, config);
+  }
+
   // Method to create a material group chart
   createMaterialGroupChart(): void {
     const materialGroups = this.filteredSalesData.reduce((acc, sale) => {
       const group = sale.MATKL; // Assuming MATERIAL_GROUP is the field name
-      acc[group] = (acc[group] || 0) + sale.SO_VAL; // Sum sales values by material group
+      acc[group] = (acc[group] || 0) + Number(sale.MAIN); // Sum sales values by material group
       return acc;
     }, {});
 
@@ -791,12 +1225,84 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     ).getContext("2d");
     this.materialGroupChart = new Chart(ctx, config);
   }
+  createMaterialGroupComparisonChart(): void {
+    // Group sales data by material group and another variable (e.g., region or another category)
+    const materialGroupComparison = this.filteredSalesData.reduce(
+      (acc, sale) => {
+        const group = sale.MATKL; // Material group
+        const category = Number(sale.MAIN) || "Other"; // Example of a category for comparison
+
+        if (!acc[group]) {
+          acc[group] = {};
+        }
+
+        acc[group][category] = (acc[group][category] || 0) + Number(sale.MAIN); // Sum sales values
+        return acc;
+      },
+      {}
+    );
+
+    const labels = Object.keys(materialGroupComparison); // Material groups
+    const categories = Array.from(
+      new Set(
+        Object.values(materialGroupComparison).flatMap((group) =>
+          Object.keys(group)
+        )
+      )
+    ); // Unique categories for comparison
+
+    const dataset = categories.map((category) => ({
+      label: category,
+      data: labels.map(
+        (group) => materialGroupComparison[group][category] || 0
+      ), // Data for each group/category
+      backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+        Math.random() * 255
+      )}, ${Math.floor(Math.random() * 255)}, 0.6)`, // Random colors for each category
+      borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+        Math.random() * 255
+      )}, ${Math.floor(Math.random() * 255)}, 1)`,
+      borderWidth: 1,
+    }));
+
+    const config: ChartConfiguration = {
+      type: "bar" as ChartType, // Bar chart type
+      data: {
+        labels,
+        datasets: dataset,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: {
+            position: "top",
+          },
+        },
+      },
+    };
+
+    // Destroy the existing chart if already rendered
+    if (this.materialGroupComparisonChart) {
+      this.materialGroupComparisonChart.destroy();
+    }
+
+    const ctx = document.getElementById(
+      "materialGroupComparisonChart"
+    ) as HTMLCanvasElement;
+    this.materialGroupComparisonChart = new Chart(ctx, config);
+  }
 
   //method to create an area chart
   createAreaChart(): void {
     const areas = this.filteredSalesData.reduce((acc, sale) => {
       const area = sale.UMREN; // Assuming UMREN is the field name for area
-      acc[area] = (acc[area] || 0) + sale.SO_VAL; // Sum sales values by area
+      acc[area] = (acc[area] || 0) + Number(sale.MAIN); // Sum sales values by area
       return acc;
     }, {});
 
@@ -878,12 +1384,144 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     ).getContext("2d");
     this.areaChart = new Chart(ctx, config);
   }
+  createAreaComparisionChart(fromDate: string, toDate: string): void {
+    // Parse the input dates
+    const startDate = this.parseDate(fromDate);
+    const endDate = this.parseDate(toDate);
+
+    // Generate an array of all months between fromDate and toDate
+    const allMonths = [];
+    let currentDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      1
+    );
+    while (currentDate <= endDate) {
+      const monthYear = `${currentDate.getFullYear()}-${(
+        currentDate.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}`;
+      allMonths.push(monthYear);
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+
+    // Aggregate performance data by area and month
+    const areaPerformanceData = this.filteredSalesData.reduce((acc, sale) => {
+      const area = sale.UMREN; // Assuming UMREN is the field name for area
+      const saleDate = this.parseDate(sale.AUDAT);
+      const monthYear = `${saleDate.getFullYear()}-${(saleDate.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`;
+
+      if (!acc[monthYear]) {
+        acc[monthYear] = {};
+      }
+
+      acc[monthYear][area] = (acc[monthYear][area] || 0) + Number(sale.MAIN);
+      return acc;
+    }, {});
+
+    // Prepare labels and datasets for the chart
+    const areaNames = [
+      ...new Set(this.filteredSalesData.map((sale) => sale.UMREN)),
+    ]; // Unique areas
+    const chartData = {
+      labels: allMonths.map((month) => {
+        const [year, monthNum] = month.split("-");
+        return new Date(parseInt(year), parseInt(monthNum) - 1).toLocaleString(
+          "default",
+          { month: "long", year: "numeric" }
+        );
+      }),
+      datasets: areaNames.map((areaName) => {
+        const data = allMonths.map(
+          (month) => areaPerformanceData[month]?.[areaName] || 0
+        ); // Get data for each month or 0
+        return {
+          label: areaName,
+          data: data,
+          backgroundColor: this.getRandomColor(), // Function to get random colors for each dataset
+          borderColor: "rgba(75, 192, 192, 1)", // Consistent border color for clarity
+          borderWidth: 2,
+          fill: true, // This property enables the area filling
+          tension: 0.3, // Optional: adds some smoothing to the lines
+        };
+      }),
+    };
+
+    const config: ChartConfiguration = {
+      type: "line" as ChartType, // Use 'line' type for area chart
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(200, 200, 200, 0.2)", // Customize grid lines
+            },
+            ticks: {
+              color: "#666", // Customize y-axis labels color
+            },
+          },
+          x: {
+            grid: {
+              color: "rgba(200, 200, 200, 0.2)", // Customize grid lines
+            },
+            ticks: {
+              color: "#666", // Customize x-axis labels color
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            position: "top", // Move the legend to the top
+            labels: {
+              color: "#333", // Customize legend text color
+            },
+          },
+          tooltip: {
+            backgroundColor: "rgba(0, 0, 0, 0.7)", // Darken the tooltip background
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            callbacks: {
+              label: (context) => {
+                const value = context.raw;
+                return `Sales: $${value}`; // Customize tooltip label
+              },
+            },
+          },
+        },
+      },
+    };
+
+    // Destroy the existing chart if already rendered
+    if (this.areaComparisionChart) {
+      this.areaComparisionChart.destroy();
+    }
+
+    const ctx = document.getElementById(
+      "areaComparisionChart"
+    ) as HTMLCanvasElement;
+    if (ctx) {
+      const chartCtx = ctx.getContext("2d");
+      if (chartCtx) {
+        this.areaChart = new Chart(chartCtx, config);
+      } else {
+        console.error("Failed to get 2D context for area performance chart");
+      }
+    } else {
+      console.error("Area performance chart element not found");
+    }
+  }
 
   // Method to create a material group 3 chart
   createMaterialGroup3Chart(): void {
     const materialGroup3 = this.filteredSalesData.reduce((acc, sale) => {
       const group3 = sale.MVGR3; // Assuming MATERIAL_GROUP_3 is the field name
-      acc[group3] = (acc[group3] || 0) + sale.SO_VAL; // Sum sales values by material group 3
+      acc[group3] = (acc[group3] || 0) + Number(sale.MAIN); // Sum sales values by material group 3
       return acc;
     }, {});
 
@@ -928,7 +1566,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
   createSaleTypeChart(): void {
     const saleTypes = this.filteredSalesData.reduce((acc, sale) => {
       const type = sale.KVGR5; // Assuming SALE_TYPE is the field name
-      acc[type] = (acc[type] || 0) + sale.MAIN; // Sum sales values by sale type
+      acc[type] = (acc[type] || 0) + Number(sale.MAIN); // Sum sales values by sale type
       return acc;
     }, {});
 
@@ -989,7 +1627,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
   createChannelChart(): void {
     const channels = this.filteredSalesData.reduce((acc, sale) => {
       const channel = sale.CHANNEL; // Assuming CHANNEL is the field name
-      acc[channel] = (acc[channel] || 0) + sale.SO_VAL; // Sum sales values by channel
+      acc[channel] = (acc[channel] || 0) + Number(sale.MAIN); // Sum sales values by channel
       return acc;
     }, {});
 
@@ -1042,5 +1680,10 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.createSaleTypeChart();
     this.createChannelChart();
     this.createMonthlySalesComparisonChart(this.fromDate, this.toDate);
+    this.createCancellationsComparisionChart(this.fromDate, this.toDate);
+    this.createPerformanceComparisionChart(this.fromDate, this.toDate);
+    this.createBookingSourceComparisonChart();
+    this.createMaterialGroupComparisonChart();
+    this.createAreaComparisionChart(this.fromDate, this.toDate);
   }
 }

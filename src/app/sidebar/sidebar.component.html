@@ -81,39 +81,56 @@
 
 <div
   class="sidebar-wrapper"
-  style="padding: 20px; background-color: #002f5d; color: white"
+  style="padding: 20px; background-color: rgb(0, 114, 206); color: white"
 >
   <!-- Logo -->
-  <div class="logo" style="text-align: center; margin-bottom: 20px">
+  <img
+    src="/assets/img/logo-new.png"
+    alt="sharvi infotech Logo"
+    style="max-width: 100%; height: auto; margin-bottom: 10px"
+  />
+
+  <!-- <div class="logo" style="text-align: center; margin-bottom: 20px">
     <a href="#" class="simple-text" style="color: white; text-decoration: none">
       Sharvi INFOTECH
     </a>
-  </div>
+  </div> -->
 
   <!-- Date Filter Section -->
   <div class="date-picker">
-    <label style="display: block; margin-top: 10px" for="fromDate">From</label>
+    <label style="display: block; margin-top: 10px; color: white" for="fromDate"
+      >From</label
+    >
     <input
       type="date"
       id="fromDate"
       [(ngModel)]="fromDate"
-      (change)="onDateChange()"
+      (ngModelChange)="onFromDateChange($event)"
       class="form-control"
     />
 
-    <label for="toDate" style="display: block; margin-top: 10px">To</label>
+    <label for="toDate" style="display: block; margin-top: 10px; color: white"
+      >To</label
+    >
     <input
       type="date"
       id="toDate"
-      [(ngModel)]="toDate"
-      (change)="onDateChange()"
+      [ngModel]="toDate"
+      (ngModelChange)="onToDateChange($event)"
       class="form-control"
       style="width: 100%; padding: 8px; margin-bottom: 10px"
     />
   </div>
+  <div style="text-align: center; margin-top: 30px">
+    <img
+      src="/assets/img/ramky.png"
+      alt="ramky Logo"
+      style="max-width: 100%; height: auto; margin-bottom: 10px"
+    />
+  </div>
 
   <!-- Quick Filters Section -->
-  <div class="filters" style="margin-top: 20px">
+  <!-- <div class="filters" style="margin-top: 20px">
     <button
       class="btn btn-filter"
       style="
@@ -161,7 +178,7 @@
     </button>
   </div>
 
-  <!-- Day Selection -->
+  
   <div class="day-buttons" style="margin-top: 20px">
     <button
       class="btn btn-day"
@@ -193,10 +210,10 @@
     >
       Sunday
     </button>
-  </div>
+  </div> -->
 
   <!-- Main Navigation Links -->
-  <ul class="nav responsive-nav" style="margin-top: 20px; padding: 0">
+  <!-- <ul class="nav responsive-nav" style="margin-top: 20px; padding: 0">
     <li
       routerLinkActive="active"
       *ngFor="let menuItem of menuItems"
@@ -216,5 +233,5 @@
         <p style="margin: 0">{{ menuItem.title }}</p>
       </a>
     </li>
-  </ul>
+  </ul> -->
 </div>

@@ -99,7 +99,12 @@
 
 <div class="row">
   <!-- sales-report.component.html -->
-  <div class="sidebar">
+  <div class="hamburger-icon" (click)="toggleSidebar()">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+  <div class="sidebar" [ngClass]="{ open: isSidebarOpen }">
     <app-sidebar (dateRangeChange)="onDateRangeChange($event)"></app-sidebar>
   </div>
 
@@ -107,7 +112,7 @@
     <nav
       class="navbar navbar-default"
       style="
-        background-color: #002f5d;
+        background-color: rgb(0, 114, 206);
         color: white;
         border-bottom: 2px solid #f0f0f0;
         padding: 15px;
@@ -123,15 +128,18 @@
             justify-content: space-between;
           "
         >
-          <h1 style="font-size: 24px; color: white; margin: 0">Report</h1>
+          <h1 style="font-size: 24px; color: white; margin: 0">
+            Sales Dashboard
+          </h1>
         </div>
         <!-- Buttons with inline styles -->
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            font-weight: bold;
+            color: navy;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -145,9 +153,10 @@
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -161,9 +170,27 @@
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+          "
+          (click)="showChart('saleType')"
+        >
+          Sale Type
+        </button>
+        <button
+          class="btn"
+          style="
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -177,9 +204,10 @@
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -188,14 +216,15 @@
           "
           (click)="showChart('materialgroup')"
         >
-          Material group
+          Material Group
         </button>
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -209,9 +238,10 @@
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -220,14 +250,15 @@
           "
           (click)="showChart('materialgroup3')"
         >
-          Material group 3
+          Material Group 3
         </button>
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -236,14 +267,15 @@
           "
           (click)="showChart('performance')"
         >
-          Performance chart
+          Performance
         </button>
         <button
           class="btn"
           style="
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            color: #002f5d;
+            background-color: skyblue;
+            border: 1px solid navy;
+            color: navy;
+            font-weight: bold;
             padding: 10px 20px;
             font-size: 14px;
             margin-left: 10px;
@@ -263,9 +295,9 @@
           <button
             (click)="toggleReport()"
             style="
-              background-color: #ffffff;
+              background-color: orangered;
               border: 1px solid #ddd;
-              color: green;
+              color: white;
               padding: 10px 20px;
               font-size: 14px;
               margin-left: 10px;
@@ -273,14 +305,14 @@
               cursor: pointer;
             "
           >
-            Report
+            {{ isReportVisible ? "Hide Report" : "Show Report" }}
           </button>
           <button
             (click)="toggleFilter()"
             style="
-              background-color: #ffffff;
+              background-color: green;
               border: 1px solid #ddd;
-              color: green;
+              color: white;
               padding: 10px 20px;
               font-size: 14px;
               margin-left: 10px;
@@ -292,8 +324,7 @@
           </button>
 
           <div class="header">
-            <h3 class="title" style="color: green">Sales Revenue Data</h3>
-            <p class="category" style="color: green">
+            <p class="category" style="color: black; font-weight: bold">
               Enter details to fetch the sales revenue information
             </p>
           </div>
@@ -303,7 +334,7 @@
               <div class="form-group">
                 <div class="form-row">
                   <div class="form-field">
-                    <label style="color: green">Sales Office:</label>
+                    <label style="color: black">Sales Office:</label>
                     <input
                       type="text"
                       formControlName="vkbur"
@@ -312,7 +343,7 @@
                   </div>
 
                   <div class="form-field">
-                    <label style="color: green">Sales Organization:</label>
+                    <label style="color: black">Sales Organization:</label>
                     <input
                       type="text"
                       formControlName="vkorg"
@@ -321,7 +352,7 @@
                   </div>
 
                   <div class="form-field">
-                    <label style="color: green">Sales Order:</label>
+                    <label style="color: black">Sales Order:</label>
                     <input
                       type="text"
                       formControlName="vbeln"
@@ -330,7 +361,7 @@
                   </div>
 
                   <div class="form-field">
-                    <label style="color: green">Customer Code:</label>
+                    <label style="color: black">Customer Code:</label>
                     <input
                       type="text"
                       formControlName="kunnr"
@@ -340,7 +371,7 @@
                 </div>
                 <div class="form-row">
                   <div class="form-field">
-                    <label style="color: green">Material:</label>
+                    <label style="color: black">Material:</label>
                     <input
                       type="text"
                       formControlName="matnr"
@@ -349,7 +380,7 @@
                   </div>
 
                   <div class="form-field">
-                    <label style="color: green">Document Date:</label>
+                    <label style="color: black">Document Date:</label>
                     <input
                       type="text"
                       formControlName="budat"
@@ -358,7 +389,7 @@
                   </div>
 
                   <div class="form-field">
-                    <label style="color: green">Sales Document Type:</label>
+                    <label style="color: black">Sales Document Type:</label>
                     <input
                       type="text"
                       formControlName="auart"
@@ -885,7 +916,7 @@
                     "
                   >
                     <canvas
-                      id="salesComparisionChart"
+                      id="cancellationsComparisionChart"
                       width="400"
                       height="200"
                     ></canvas>
@@ -895,9 +926,9 @@
             </div>
           </div>
 
-          <div *ngIf="currentChart === ''">
+          <div *ngIf="currentChart === 'saleType'">
             <div class="row">
-              <h2>Performance Chart</h2>
+              <h2>Sale type</h2>
               <div class="col-md-6">
                 <div class="card">
                   <div
@@ -910,7 +941,7 @@
                     "
                   >
                     <canvas
-                      id="performanceChart"
+                      id="saleTypeChart"
                       width="400"
                       height="200"
                     ></canvas>
@@ -928,7 +959,7 @@
                       margin: auto;
                     "
                   >
-                    <canvas id=""></canvas>
+                    <canvas id="salesComparisionChart"></canvas>
                   </div>
                 </div>
               </div>
@@ -969,7 +1000,7 @@
                     "
                   >
                     <canvas
-                      id="salesComparisionChart"
+                      id="bookingSourceComparisonChart"
                       width="400"
                       height="200"
                     ></canvas>
@@ -1013,7 +1044,7 @@
                     "
                   >
                     <canvas
-                      id="salesComparisionChart"
+                      id="materialGroupComparisonChart"
                       width="400"
                       height="200"
                     ></canvas>
@@ -1052,7 +1083,7 @@
                     "
                   >
                     <canvas
-                      id="salesComparisionChart"
+                      id="areaComparisionChart"
                       width="400"
                       height="200"
                     ></canvas>
@@ -1107,7 +1138,7 @@
           </div>
           <div *ngIf="currentChart === 'performance'">
             <div class="row">
-              <h2>Sale type</h2>
+              <h2>Performance</h2>
               <div class="col-md-6">
                 <div class="card">
                   <div
@@ -1139,7 +1170,7 @@
                     "
                   >
                     <canvas
-                      id="salesComparisionChart"
+                      id="performanceComparisionChart"
                       width="400"
                       height="200"
                     ></canvas>

@@ -1,31 +1,56 @@
-<div class="login-container">
-  <div class="login-left">
-    <h2>Login! 👋</h2>
-    <p>How do I get started?</p>
-    <button class="btn btn-google">Sign in with Google</button>
-    <button class="btn btn-apple">Sign in with Apple</button>
-    <p>or Login with Email</p>
-    <form (ngSubmit)="onLogin()">
-      <label for="email">Email</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        [(ngModel)]="email"
-        placeholder="new@atheros.ai"
-        required
-      />
-      <label for="password">Password</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        [(ngModel)]="password"
-        placeholder="**"
-        required
-      />
-      <button type="submit" class="btn btn-signin">Sign In</button>
-    </form>
-    <p>Don't have an account? <a href="#">Sign Up Now</a></p>
+<div class="flex flex-col w-full h-full">
+  <div class="login-container">
+    <div class="login-image">
+      <div class="text-container">
+        <h1 class="image-text">
+          <span class="fixed-text">HBL</span>
+          <span class="divider">|</span>
+          <span class="dynamic-text">Battery</span>
+        </h1>
+      </div>
+      <img src="images/1.jpeg" alt="Image 1" class="background-img active" />
+      <img src="images/2.jpeg" alt="Image 2" class="background-img" />
+      <img src="images/3.jpeg" alt="Image 3" class="background-img" />
+      <img src="images/4.jpeg" alt="Image 4" class="background-img" />
+    </div>
+    <div class="login-form">
+      <mat-card>
+        <div class="logo-container">
+          <img src="images/logo/hbl.png" alt="Logo" class="login-logo" />
+        </div>
+        <mat-card-content>
+          <form [formGroup]="signInForm">
+            <mat-form-field appearance="fill">
+              <mat-label>Plant</mat-label>
+              <input matInput type="text" formControlName="ZWERKS" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Division</mat-label>
+              <input matInput type="text" formControlName="ZZDIV" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>User Name</mat-label>
+              <input matInput type="text" formControlName="ZUSER" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Password</mat-label>
+              <input
+                matInput
+                type="password"
+                formControlName="ZPASSWORD"
+                required
+              />
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" type="submit">
+              Log in
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
 </div>

@@ -219,3 +219,4 @@ canvas {
 .sidebar.open {
   transform: translateX(0); /* Slide in */
 }
+

@@ -48,7 +48,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
   activeChartInstance: Chart | null = null;
   isReportVisible = false;
   isFilterVisible = false;
-  isSidebarOpen = false; // Sidebar starts open by default
+  isSidebarOpen = true; // Sidebar starts open by default
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen; // Toggle the sidebar state
@@ -344,7 +344,7 @@ export class TablesComponent implements OnInit, OnDestroy, AfterViewInit {
             callbacks: {
               label: (context) => {
                 const value = context.raw;
-                return `Sales: $${value}`; // Format the tooltip label
+                return `Sales: ${value} .Rs`; // Format the tooltip label
               },
             },
           },
